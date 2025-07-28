@@ -15,7 +15,9 @@ import {
   Title,
   Tooltip,
   Legend,
-  ArcElement, // <--- NOVO: Para gráficos de pizza/doughnut
+  ArcElement,
+  // <--- NOVO: Controladores de gráfico para garantir barras horizontais
+  BarController,
 } from 'chart.js';
 
 // Registra os componentes necessários
@@ -26,7 +28,8 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  ArcElement, // <--- NOVO: Para gráficos de pizza/doughnut
+  ArcElement,
+  BarController, // <--- NOVO: Registra o controlador de barra
 );
 
 ReactDOM.createRoot(document.getElementById('root')).render(

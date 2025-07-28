@@ -1,19 +1,26 @@
 // src/App.jsx
-import React, { useState, useEffect, useMemo } from 'react'; // <--- NOVO: useMemo
+import React, { useState, useEffect, useMemo } from 'react';
 import { Layout, Card } from './components/Layout';
 import DataHighlightCard from './components/DataHighlightCard';
 import PopulationChart from './components/PopulationChart';
 import RegionalPopulationChart from './components/RegionalPopulationChart';
-import YearSelector from './components/YearSelector'; // <--- NOVO: Importa YearSelector
+import AgeDistributionChart from './components/AgeDistributionChart'; // <--- NOVO: Importa o novo gráfico
+import YearSelector from './components/YearSelector';
+import RegionFilter from './components/RegionFilter';
+import NoDataMessage from './components/NoDataMessage';
+
 import {
   fetchMockBrazilPopulation,
   fetchMockRegionalPopulation,
+  fetchMockAgeDistribution, // <--- NOVO: Importa a função de dados de faixa etária
 } from './services/mockIbgeService';
 
 function App() {
-  const [allPopulationData, setAllPopulationData] = useState([]); // <--- NOVO: Armazena TODOS os dados da população
-  const [regionalPopulationData, setRegionalPopulationData] = useState([]);
-  const [selectedYear, setSelectedYear] = useState(null); // <--- NOVO: Estado para o ano selecionado
+  const [allPopulationData, setAllPopulationData] = useState([]);
+  const [allRegionalPopulationData, setAllRegionalPopulationData] = useState([]);
+  const [ageDistributionData, setAgeDistributionData] = useState([]); // <--- NOVO: Estado para dados de faixa etária
+  const [selectedYear, setSelectedYear] = useState(null);
+  const [selectedRegions, setSelectedRegions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -35,8 +42,7 @@ function App() {
               value: parseInt(value)
             }));
             formattedData.sort((a, b) => a.year - b.year);
-            setAllPopulationData(formattedData); // <--- Armazena TODOS os dados
-            // Define o ano mais recente como o padrão selecionado
+            setAllPopulationData(formattedData);
             if (formattedData.length > 0) {
               setSelectedYear(formattedData[formattedData.length - 1].year);
             }
@@ -50,9 +56,18 @@ function App() {
         // Fetch dos dados regionais
         const regionalData = await fetchMockRegionalPopulation();
         if (regionalData && regionalData.length > 0) {
-          setRegionalPopulationData(regionalData);
+          setAllRegionalPopulationData(regionalData);
+          setSelectedRegions(regionalData.map(item => item.region));
         } else {
           console.warn("Nenhum dado regional disponível ou estrutura inesperada.");
+        }
+
+        // <--- NOVO: Fetch dos dados de faixa etária
+        const ageData = await fetchMockAgeDistribution();
+        if (ageData && ageData.length > 0) {
+          setAgeDistributionData(ageData);
+        } else {
+          console.warn("Nenhum dado de faixa etária disponível ou estrutura inesperada.");
         }
 
       } catch (err) {
@@ -66,32 +81,40 @@ function App() {
     fetchData();
   }, []);
 
-  // Derivar os anos disponíveis para o seletor
   const availableYears = useMemo(() => {
     return allPopulationData.map(data => data.year);
   }, [allPopulationData]);
 
-  // Filtrar os dados da população com base no ano selecionado
-  // Para o gráfico de barras, vamos mostrar apenas o ano selecionado e o ano anterior para contexto
   const filteredPopulationData = useMemo(() => {
     if (!selectedYear || allPopulationData.length === 0) {
       return [];
     }
     const selectedYearIndex = allPopulationData.findIndex(data => data.year === selectedYear);
     if (selectedYearIndex !== -1) {
-      // Inclui o ano selecionado e o ano anterior (se existir)
       const startIndex = Math.max(0, selectedYearIndex - 1);
       return allPopulationData.slice(startIndex, selectedYearIndex + 1);
     }
     return [];
   }, [selectedYear, allPopulationData]);
 
-  // Pega o dado mais recente para o DataHighlightCard (usa o último de allPopulationData)
   const latestPopulation = allPopulationData.length > 0 ? allPopulationData[allPopulationData.length - 1] : null;
+
+  const allAvailableRegions = useMemo(() => {
+    return allRegionalPopulationData.map(item => item.region);
+  }, [allRegionalPopulationData]);
+
+  const filteredRegionalPopulationData = useMemo(() => {
+    if (selectedRegions.length === 0) {
+      return [];
+    }
+    return allRegionalPopulationData.filter(item =>
+      selectedRegions.includes(item.region)
+    );
+  }, [selectedRegions, allRegionalPopulationData]);
 
   return (
     <Layout>
-      {/* Card de População Numérica - permanece o mesmo */}
+      {/* Card de População Numérica */}
       {loading && (
         <DataHighlightCard title="População Estimada do Brasil" value="Carregando..." label="" />
       )}
@@ -106,44 +129,57 @@ function App() {
         />
       )}
       {!loading && !error && !latestPopulation && (
-        <DataHighlightCard title="População Estimada do Brasil" value="N/A" label="Nenhum dado disponível" />
+        <NoDataMessage type="empty" message="Nenhum dado de população disponível." />
       )}
 
       {/* Card do Gráfico de População (barras) */}
       <Card>
         <h2>Gráfico da População Estimada (Anual)</h2>
-        {/* <--- NOVO: Adiciona o YearSelector aqui */}
         {!loading && !error && availableYears.length > 0 && (
           <YearSelector
             years={availableYears}
             selectedYear={selectedYear}
-            onYearChange={setSelectedYear} // Função para atualizar o ano selecionado
+            onYearChange={setSelectedYear}
           />
         )}
-        {loading && <p>Carregando gráfico...</p>}
-        {error && <p style={{ color: 'red' }}>Erro ao carregar gráfico: {error}</p>}
+        {loading && <NoDataMessage type="info" message="Carregando dados do gráfico..." />}
+        {error && <NoDataMessage type="error" message={`Erro ao carregar gráfico: ${error}`} />}
         {!loading && !error && filteredPopulationData.length > 0 ? (
-          <PopulationChart data={filteredPopulationData} /> 
+          <PopulationChart data={filteredPopulationData} />
         ) : (
-          !loading && !error && <p>Nenhum dado para exibir no gráfico.</p>
+          !loading && !error && <NoDataMessage type="empty" message="Nenhum dado disponível para o gráfico no ano selecionado." />
         )}
       </Card>
 
-      {/* Card do Gráfico de População por Região (pizza) - permanece o mesmo */}
+      {/* Card do Gráfico de População por Região (pizza) */}
       <Card>
         <h2>População por Região</h2>
-        {loading && <p>Carregando gráfico regional...</p>}
-        {error && <p style={{ color: 'red' }}>Erro ao carregar gráfico regional: {error}</p>}
-        {!loading && !error && regionalPopulationData.length > 0 ? (
-          <RegionalPopulationChart data={regionalPopulationData} />
+        {!loading && !error && allAvailableRegions.length > 0 && (
+          <RegionFilter
+            allRegions={allAvailableRegions}
+            selectedRegions={selectedRegions}
+            onRegionChange={setSelectedRegions}
+          />
+        )}
+        {loading && <NoDataMessage type="info" message="Carregando dados do gráfico regional..." />}
+        {error && <NoDataMessage type="error" message={`Erro ao carregar gráfico regional: ${error}`} />}
+        {!loading && !error && filteredRegionalPopulationData.length > 0 ? (
+          <RegionalPopulationChart data={filteredRegionalPopulationData} />
         ) : (
-          !loading && !error && <p>Nenhum dado regional disponível para o gráfico.</p>
+          !loading && !error && <NoDataMessage type="empty" message="Nenhuma região selecionada para exibir no gráfico." />
         )}
       </Card>
 
+      {/* <--- NOVO: Card de População por Faixa Etária */}
       <Card>
-        <h2>Dados Adicionais</h2>
-        <p>Aqui podemos adicionar outras informações do IBGE.</p>
+        <h2>População por Faixa Etária</h2>
+        {loading && <NoDataMessage type="info" message="Carregando dados de faixa etária..." />}
+        {error && <NoDataMessage type="error" message={`Erro ao carregar dados de faixa etária: ${error}`} />}
+        {!loading && !error && ageDistributionData.length > 0 ? (
+          <AgeDistributionChart data={ageDistributionData} />
+        ) : (
+          !loading && !error && <NoDataMessage type="empty" message="Nenhum dado de faixa etária disponível." />
+        )}
       </Card>
     </Layout>
   );

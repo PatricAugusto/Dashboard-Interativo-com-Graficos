@@ -23,7 +23,7 @@ export const fetchMockBrazilPopulation = async () => {
                     "2020": "211755692",
                     "2021": "213317639",
                     "2022": "214878477",
-                    "2023": "216422446", // Este será o ano inicial selecionado
+                    "2023": "216422446",
                     "2024": "218000000"
                   }
                 }
@@ -33,7 +33,7 @@ export const fetchMockBrazilPopulation = async () => {
         }
       ];
       resolve(mockData);
-    }, 500);
+    }, 500); // Simula um pequeno atraso na rede de 500ms
   });
 };
 
@@ -55,5 +55,26 @@ export const fetchMockRegionalPopulation = async () => {
       ];
       resolve(regionalData);
     }, 600); // Um atraso um pouco diferente
+  });
+};
+
+/**
+ * Simula a busca de dados de população por faixa etária.
+ * Retorna dados fictícios para fins de desenvolvimento.
+ *
+ * @returns {Promise<Array>} Uma promessa que resolve para um array de dados de distribuição etária.
+ */
+export const fetchMockAgeDistribution = async () => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const ageData = [
+        { range: '0-14 anos', population: 40000000 },
+        { range: '15-24 anos', population: 35000000 },
+        { range: '25-44 anos', population: 70000000 },
+        { range: '45-64 anos', population: 50000000 },
+        { range: '65+ anos', population: 23000000 },
+      ];
+      resolve(ageData);
+    }, 700); // Um atraso um pouco diferente
   });
 };
