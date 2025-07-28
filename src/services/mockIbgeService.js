@@ -23,8 +23,8 @@ export const fetchMockBrazilPopulation = async () => {
                     "2020": "211755692",
                     "2021": "213317639",
                     "2022": "214878477",
-                    "2023": "216422446", // Dados mais recentes fictícios
-                    "2024": "218000000"  // Futuro fictício para série
+                    "2023": "216422446", // Este será o ano inicial selecionado
+                    "2024": "218000000"
                   }
                 }
               ]
@@ -33,8 +33,27 @@ export const fetchMockBrazilPopulation = async () => {
         }
       ];
       resolve(mockData);
-    }, 500); // Simula um pequeno atraso na rede de 500ms
+    }, 500);
   });
 };
 
-// Você pode adicionar outras funções aqui para outros dados fictícios, se precisar
+/**
+ * Simula a busca de dados de população por região.
+ * Retorna dados fictícios para fins de desenvolvimento.
+ *
+ * @returns {Promise<Array>} Uma promessa que resolve para um array de dados de distribuição regional.
+ */
+export const fetchMockRegionalPopulation = async () => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const regionalData = [
+        { region: 'Sudeste', population: 89000000 },
+        { region: 'Nordeste', population: 58000000 },
+        { region: 'Sul', population: 30000000 },
+        { region: 'Norte', population: 18000000 },
+        { region: 'Centro-Oeste', population: 16000000 },
+      ];
+      resolve(regionalData);
+    }, 600); // Um atraso um pouco diferente
+  });
+};

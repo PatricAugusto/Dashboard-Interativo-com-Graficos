@@ -2,58 +2,68 @@
 import React from 'react';
 import { Bar } from 'react-chartjs-2';
 import styled from 'styled-components';
+import { useTheme } from 'styled-components'; // <--- NOVO: Para acessar o tema dentro do componente
 
-// Estilo para o contêiner do gráfico, se necessário
 const ChartContainer = styled.div`
   width: 100%;
-  max-width: 600px; /* Limite a largura para melhor visualização em telas maiores */
-  margin: 0 auto; /* Centraliza o gráfico */
+  max-width: 600px;
+  margin: 0 auto;
+  height: 300px; /* Define uma altura para o container do gráfico de barras */
 `;
 
 const PopulationChart = ({ data }) => {
-  // Verifica se os dados estão vazios ou não no formato esperado
+  const theme = useTheme(); // <--- NOVO: Acessa o tema
+
   if (!data || data.length === 0) {
     return <p>Nenhum dado disponível para o gráfico.</p>;
   }
 
-  // Prepara os dados no formato que o Chart.js espera
-  // Assumindo que 'data' é um array com um objeto { year, value }
   const chartData = {
-    labels: data.map((item) => item.year), // Eixo X: Anos
+    labels: data.map((item) => item.year),
     datasets: [
       {
         label: 'População Estimada',
-        data: data.map((item) => parseInt(item.value)), // Eixo Y: Valores da população
-        backgroundColor: 'rgba(0, 123, 255, 0.7)', // Cor das barras (azul primário do nosso tema)
-        borderColor: 'rgba(0, 123, 255, 1)',
+        data: data.map((item) => parseInt(item.value)),
+        backgroundColor: theme.colors.chartColors.blue, // <--- Usa cor do tema
+        borderColor: theme.colors.primary, // <--- Usa cor do tema
         borderWidth: 1,
+        borderRadius: 4, // Bordas arredondadas para as barras
       },
     ],
   };
 
-  // Opções para o gráfico
   const chartOptions = {
     responsive: true,
-    maintainAspectRatio: false, // Permite que o gráfico se ajuste ao tamanho do contêiner
+    maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'top', // Posição da legenda
+        position: 'top',
         labels: {
-          color: '#333', // Cor do texto da legenda
+          color: theme.colors.lightText, // Cor do texto da legenda
+          font: {
+            family: theme.fontFamily, // Fonte da legenda
+          },
         },
       },
       title: {
         display: true,
-        text: 'População Estimada do Brasil (em milhões)', // Título do gráfico
-        color: '#333', // Cor do título
+        text: 'População Estimada do Brasil (em milhões)',
+        color: theme.colors.text, // Cor do título do gráfico
         font: {
           size: 16,
+          family: theme.fontFamily, // Fonte do título
+          weight: '600',
         },
       },
       tooltip: {
+        backgroundColor: theme.colors.text, // Fundo do tooltip
+        titleColor: theme.colors.cardBackground, // Cor do título no tooltip
+        bodyColor: theme.colors.cardBackground, // Cor do corpo no tooltip
+        borderColor: theme.colors.border,
+        borderWidth: 1,
+        cornerRadius: theme.borderRadius, // Bordas arredondadas
         callbacks: {
           label: function (context) {
-            // Formata o valor no tooltip para milhões e com separador de milhares
             const value = parseInt(context.raw);
             return `População: ${(value / 1000000).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} milhões`;
           },
@@ -65,30 +75,43 @@ const PopulationChart = ({ data }) => {
         title: {
           display: true,
           text: 'Ano',
-          color: '#333',
+          color: theme.colors.lightText,
+          font: {
+            family: theme.fontFamily,
+          },
         },
         ticks: {
-          color: '#333',
+          color: theme.colors.lightText,
+          font: {
+            family: theme.fontFamily,
+          },
         },
         grid: {
-          color: 'rgba(0, 0, 0, 0.05)', // Linhas de grade suaves
+          color: theme.colors.border, // Cor da linha de grade
+          drawBorder: false, // Não desenha a borda do grid (mais limpo)
         },
       },
       y: {
         title: {
           display: true,
           text: 'População (em milhões)',
-          color: '#333',
+          color: theme.colors.lightText,
+          font: {
+            family: theme.fontFamily,
+          },
         },
         ticks: {
-          color: '#333',
+          color: theme.colors.lightText,
           callback: function (value) {
-            // Formata os ticks do eixo Y para milhões
             return `${(value / 1000000).toLocaleString('pt-BR')}M`;
+          },
+          font: {
+            family: theme.fontFamily,
           },
         },
         grid: {
-          color: 'rgba(0, 0, 0, 0.05)',
+          color: theme.colors.border,
+          drawBorder: false,
         },
       },
     },

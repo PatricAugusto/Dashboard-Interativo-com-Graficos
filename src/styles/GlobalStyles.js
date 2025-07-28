@@ -2,7 +2,6 @@
 import { createGlobalStyle } from 'styled-components';
 
 const GlobalStyles = createGlobalStyle`
-  /* Importar fonte do Google Fonts (opcional, remova se não usar Inter) */
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
   * {
@@ -12,11 +11,11 @@ const GlobalStyles = createGlobalStyle`
   }
 
   body {
-    font-family: ${(props) => props.theme.fontFamily}; /* Usa a fonte definida no tema */
-    background-color: ${(props) => props.theme.colors.background};
+    font-family: ${(props) => props.theme.fontFamily};
+    background-color: ${(props) => props.theme.colors.background}; /* <--- Usa o novo fundo suave */
     color: ${(props) => props.theme.colors.text};
     line-height: 1.6;
-    -webkit-font-smoothing: antialiased; /* Suaviza as fontes para melhor leitura */
+    -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
@@ -29,7 +28,7 @@ const GlobalStyles = createGlobalStyle`
   h1, h2, h3, h4, h5, h6 {
     color: ${(props) => props.theme.colors.text};
     margin-bottom: ${(props) => props.theme.spacing.small};
-    font-weight: 600; /* Fontes mais encorpadas para títulos */
+    font-weight: 600;
   }
 
   p {

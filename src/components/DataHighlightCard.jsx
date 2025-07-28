@@ -1,31 +1,35 @@
 // src/components/DataHighlightCard.jsx
 import React from 'react';
 import styled from 'styled-components';
-import { Card } from './Layout'; // Reutiliza o estilo base do Card
+import { Card } from './Layout';
 
-// Componente estilizado para o valor principal
 const Value = styled.p`
-  font-size: 2.8rem; /* Tamanho grande para o destaque */
-  font-weight: 700; /* Negrito para forte impacto */
-  color: ${(props) => props.theme.colors.primary}; /* Cor primária do tema */
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: ${(props) => props.theme.colors.primary};
   margin-bottom: ${(props) => props.theme.spacing.small};
-  text-align: center; /* Centraliza o valor */
-  white-space: nowrap; /* Impede que o número quebre a linha */
-  overflow: hidden; /* Oculta qualquer estouro */
-  text-overflow: ellipsis; /* Adiciona reticências se o texto for muito longo */
+  text-align: center; /* Já estava, mas confirmo */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  @media (max-width: ${(props) => props.theme.breakpoints.mobile}) {
+    font-size: 2.2rem; /* Reduz o tamanho da fonte em mobile */
+  }
 `;
 
-// Componente estilizado para o rótulo/descrição do valor
 const Label = styled.p`
-  font-size: 1rem; /* Tamanho legível */
-  color: ${(props) => props.theme.colors.lightText}; /* Cor de texto secundária */
-  text-align: center; /* Centraliza o rótulo */
+  font-size: 1rem;
+  color: ${(props) => props.theme.colors.lightText};
+  text-align: center; /* Já estava, mas confirmo */
   margin-top: ${(props) => props.theme.spacing.small};
+
+  @media (max-width: ${(props) => props.theme.breakpoints.mobile}) {
+    font-size: 0.9rem; /* Reduz o tamanho da fonte em mobile */
+  }
 `;
 
-// Componente principal do DataHighlightCard
 const DataHighlightCard = ({ title, value, label }) => {
-  // Formata o valor com separador de milhares e remove casas decimais
   const formattedValue = value ? parseInt(value).toLocaleString('pt-BR') : 'N/A';
 
   return (
