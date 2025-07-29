@@ -1,28 +1,61 @@
 // src/App.jsx
 import React, { useState, useEffect, useMemo } from 'react';
-import { Layout, Card } from './components/Layout';
+import { Layout, Card, Header } from './components/Layout';
 import DataHighlightCard from './components/DataHighlightCard';
 import PopulationChart from './components/PopulationChart';
 import RegionalPopulationChart from './components/RegionalPopulationChart';
-import AgeDistributionChart from './components/AgeDistributionChart'; // <--- NOVO: Importa o novo gráfico
+import AgeDistributionChart from './components/AgeDistributionChart';
 import YearSelector from './components/YearSelector';
 import RegionFilter from './components/RegionFilter';
 import NoDataMessage from './components/NoDataMessage';
+import ThemeToggle from './components/ThemeToggle';
+import Loader from './components/Loader';
+
+import { getTheme } from './styles/theme';
+import { ThemeProvider } from 'styled-components';
+import GlobalStyles from './styles/GlobalStyles';
 
 import {
   fetchMockBrazilPopulation,
   fetchMockRegionalPopulation,
-  fetchMockAgeDistribution, // <--- NOVO: Importa a função de dados de faixa etária
+  fetchMockAgeDistribution,
 } from './services/mockIbgeService';
 
+const THEME_STORAGE_KEY = 'dashboardThemeMode';
+
 function App() {
+  const [themeMode, setThemeMode] = useState(() => {
+    try {
+      const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+      return storedTheme ? storedTheme : 'light';
+    } catch (error) {
+      console.error("Erro ao ler do localStorage:", error);
+      return 'light';
+    }
+  });
+
+  const toggleTheme = () => {
+    setThemeMode((prevMode) => {
+      const newMode = prevMode === 'light' ? 'dark' : 'light';
+      try {
+        localStorage.setItem(THEME_STORAGE_KEY, newMode);
+      } catch (error) {
+        console.error("Erro ao escrever no localStorage:", error);
+      }
+      return newMode;
+    });
+  };
+
+  const currentTheme = useMemo(() => getTheme(themeMode), [themeMode]);
+
   const [allPopulationData, setAllPopulationData] = useState([]);
   const [allRegionalPopulationData, setAllRegionalPopulationData] = useState([]);
-  const [ageDistributionData, setAgeDistributionData] = useState([]); // <--- NOVO: Estado para dados de faixa etária
+  const [ageDistributionData, setAgeDistributionData] = useState([]);
   const [selectedYear, setSelectedYear] = useState(null);
   const [selectedRegions, setSelectedRegions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,7 +63,6 @@ function App() {
         setLoading(true);
         setError(null);
 
-        // Fetch da população total
         const brazilData = await fetchMockBrazilPopulation();
         if (brazilData && brazilData.length > 0 && brazilData[0].resultados && brazilData[0].resultados.length > 0) {
           const series = brazilData[0].resultados[0].series;
@@ -44,6 +76,7 @@ function App() {
             formattedData.sort((a, b) => a.year - b.year);
             setAllPopulationData(formattedData);
             if (formattedData.length > 0) {
+              // Define o ano inicial como o último ano disponível
               setSelectedYear(formattedData[formattedData.length - 1].year);
             }
           } else {
@@ -53,7 +86,6 @@ function App() {
           setError("Estrutura de dados fictícios (Brasil) inesperada ou vazia.");
         }
 
-        // Fetch dos dados regionais
         const regionalData = await fetchMockRegionalPopulation();
         if (regionalData && regionalData.length > 0) {
           setAllRegionalPopulationData(regionalData);
@@ -62,7 +94,6 @@ function App() {
           console.warn("Nenhum dado regional disponível ou estrutura inesperada.");
         }
 
-        // <--- NOVO: Fetch dos dados de faixa etária
         const ageData = await fetchMockAgeDistribution();
         if (ageData && ageData.length > 0) {
           setAgeDistributionData(ageData);
@@ -89,12 +120,8 @@ function App() {
     if (!selectedYear || allPopulationData.length === 0) {
       return [];
     }
-    const selectedYearIndex = allPopulationData.findIndex(data => data.year === selectedYear);
-    if (selectedYearIndex !== -1) {
-      const startIndex = Math.max(0, selectedYearIndex - 1);
-      return allPopulationData.slice(startIndex, selectedYearIndex + 1);
-    }
-    return [];
+    // <--- Lógica de filtro corrigida: inclui todos os anos até o selectedYear
+    return allPopulationData.filter(data => data.year <= selectedYear);
   }, [selectedYear, allPopulationData]);
 
   const latestPopulation = allPopulationData.length > 0 ? allPopulationData[allPopulationData.length - 1] : null;
@@ -113,68 +140,76 @@ function App() {
   }, [selectedRegions, allRegionalPopulationData]);
 
   return (
-    <Layout>
-      {/* Card de População Numérica */}
-      {loading && (
-        <DataHighlightCard title="População Estimada do Brasil" value="Carregando..." label="" />
-      )}
-      {error && (
-        <DataHighlightCard title="População Estimada do Brasil" value="Erro!" label={error} />
-      )}
-      {!loading && !error && latestPopulation && (
-        <DataHighlightCard
-          title="População Estimada do Brasil"
-          value={latestPopulation.value}
-          label={`Dados de ${latestPopulation.year}`}
-        />
-      )}
-      {!loading && !error && !latestPopulation && (
-        <NoDataMessage type="empty" message="Nenhum dado de população disponível." />
-      )}
+    <ThemeProvider theme={currentTheme}>
+      <GlobalStyles />
+      <Layout>
+        <Header>
+          <h1>Dashboard IBGE</h1>
+          <ThemeToggle toggleTheme={toggleTheme} currentMode={themeMode} />
+        </Header>
 
-      {/* Card do Gráfico de População (barras) */}
-      <Card>
-        <h2>Gráfico da População Estimada (Anual)</h2>
-        {!loading && !error && availableYears.length > 0 && (
-          <YearSelector
-            years={availableYears}
-            selectedYear={selectedYear}
-            onYearChange={setSelectedYear}
+        {/* Card de População Numérica */}
+        {loading && (
+          <Loader message="Carregando população..." />
+        )}
+        {error && (
+          <DataHighlightCard title="População Estimada do Brasil" value="Erro!" label={error} />
+        )}
+        {!loading && !error && latestPopulation && (
+          <DataHighlightCard
+            title="População Estimada do Brasil"
+            value={latestPopulation.value}
+            label={`Dados de ${latestPopulation.year}`}
           />
         )}
-        {loading && <NoDataMessage type="info" message="Carregando dados do gráfico..." />}
-        {error && <NoDataMessage type="error" message={`Erro ao carregar gráfico: ${error}`} />}
-        {!loading && !error && filteredPopulationData.length > 0 ? (
-          <PopulationChart data={filteredPopulationData} />
-        ) : (
-          !loading && !error && <NoDataMessage type="empty" message="Nenhum dado disponível para o gráfico no ano selecionado." />
+        {!loading && !error && !latestPopulation && (
+          <NoDataMessage type="empty" message="Nenhum dado de população disponível." />
         )}
-      </Card>
 
-      {/* Card do Gráfico de População por Região (pizza) */}
-      <Card>
-        <h2>População por Região</h2>
-        {!loading && !error && allAvailableRegions.length > 0 && (
-          <RegionFilter
-            allRegions={allAvailableRegions}
-            selectedRegions={selectedRegions}
-            onRegionChange={setSelectedRegions}
-          />
-        )}
-        {loading && <NoDataMessage type="info" message="Carregando dados do gráfico regional..." />}
-        {error && <NoDataMessage type="error" message={`Erro ao carregar gráfico regional: ${error}`} />}
-        {!loading && !error && filteredRegionalPopulationData.length > 0 ? (
-          <RegionalPopulationChart data={filteredRegionalPopulationData} />
-        ) : (
-          !loading && !error && <NoDataMessage type="empty" message="Nenhuma região selecionada para exibir no gráfico." />
-        )}
-      </Card>
+        {/* Card do Gráfico de População (barras) */}
+        <Card>
+          <h2>Gráfico da População Estimada (Anual)</h2>
+          {!loading && !error && availableYears.length > 0 && (
+            <YearSelector
+              years={availableYears}
+              selectedYear={selectedYear}
+              onYearChange={setSelectedYear}
+            />
+          )}
+          {loading && <Loader message="Carregando gráfico de população..." />}
+          {error && <NoDataMessage type="error" message={`Erro ao carregar gráfico: ${error}`} />}
+          {!loading && !error && filteredPopulationData.length > 0 ? (
+            <PopulationChart data={filteredPopulationData} />
+          ) : (
+            // Mensagem específica para o gráfico anual quando não há dados para o filtro
+            !loading && !error && <NoDataMessage type="empty" message="Nenhum dado disponível para o gráfico até o ano selecionado." />
+          )}
+        </Card>
 
-      {/* <--- NOVO: Card de População por Faixa Etária */}
-      <Card>
-        <h2>População por Faixa Etária</h2>
-        {loading && <NoDataMessage type="info" message="Carregando dados de faixa etária..." />}
-        {error && <NoDataMessage type="error" message={`Erro ao carregar dados de faixa etária: ${error}`} />}
+        {/* Card do Gráfico de População por Região (pizza) */}
+        <Card>
+          <h2>População por Região</h2>
+          {!loading && !error && allAvailableRegions.length > 0 && (
+            <RegionFilter
+              allRegions={allAvailableRegions}
+              selectedRegions={selectedRegions}
+              onRegionChange={setSelectedRegions}
+            />
+          )}
+          {loading && <Loader message="Carregando gráfico regional..." />}
+          {error && <NoDataMessage type="error" message={`Erro ao carregar gráfico regional: ${error}`} />}
+          {!loading && !error && filteredRegionalPopulationData.length > 0 ? (
+            <RegionalPopulationChart data={filteredRegionalPopulationData} />
+          ) : (
+            !loading && !error && <NoDataMessage type="empty" message="Nenhuma região selecionada para exibir no gráfico." />
+          )}
+        </Card>
+
+        {/* Card de População por Faixa Etária */}
+        <Card>
+          <h2>População por Faixa Etária</h2>
+          {loading && <Loader message="Carregando dados de faixa etária..." />}
+          {error && <NoDataMessage type="error" message={`Erro ao carregar dados de faixa etária: ${error}`} />}
         {!loading && !error && ageDistributionData.length > 0 ? (
           <AgeDistributionChart data={ageDistributionData} />
         ) : (
@@ -182,7 +217,8 @@ function App() {
         )}
       </Card>
     </Layout>
-  );
+  </ThemeProvider>
+);
 }
 
 export default App;

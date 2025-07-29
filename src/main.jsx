@@ -2,9 +2,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
-import GlobalStyles from './styles/GlobalStyles';
-import { ThemeProvider } from 'styled-components';
-import theme from './styles/theme';
 
 // Importações e registro do Chart.js
 import {
@@ -16,7 +13,6 @@ import {
   Tooltip,
   Legend,
   ArcElement,
-  // <--- NOVO: Controladores de gráfico para garantir barras horizontais
   BarController,
 } from 'chart.js';
 
@@ -29,14 +25,12 @@ ChartJS.register(
   Tooltip,
   Legend,
   ArcElement,
-  BarController, // <--- NOVO: Registra o controlador de barra
+  BarController,
 );
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ThemeProvider theme={theme}>
-      <GlobalStyles />
-      <App />
-    </ThemeProvider>
+    {/* Remove ThemeProvider e GlobalStyles daqui */}
+    <App />
   </React.StrictMode>,
 );
