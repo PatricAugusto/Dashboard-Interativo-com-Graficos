@@ -6,9 +6,10 @@ import { useTheme } from 'styled-components'; // <--- NOVO: Para acessar o tema 
 
 const ChartContainer = styled.div`
   width: 100%;
-  max-width: 600px;
+  max-width: 800px;
   margin: 0 auto;
-  height: 300px; /* Define uma altura para o container do gráfico de barras */
+  height: 350px; /* Define uma altura para o container do gráfico de barras */
+  position: relative;
 `;
 
 const PopulationChart = ({ data }) => {

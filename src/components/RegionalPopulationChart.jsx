@@ -6,9 +6,10 @@ import { useTheme } from 'styled-components'; // <--- NOVO: Para acessar o tema
 
 const ChartContainer = styled.div`
   width: 100%;
-  max-width: 400px;
+  max-width: 450px;
   margin: 0 auto;
-  height: 400px; /* Garante que o gráfico de pizza tenha espaço */
+  height: 350px; /* Garante que o gráfico de pizza tenha espaço */
+  position: relative;
 `;
 
 const RegionalPopulationChart = ({ data }) => {

@@ -6,9 +6,10 @@ import { useTheme } from 'styled-components';
 
 const ChartContainer = styled.div`
   width: 100%;
-  max-width: 600px;
+  max-width: 700px;
   margin: 0 auto;
-  height: 300px; /* Altura para o gráfico */
+  height: 350px; /* Altura para o gráfico */
+  position: relative;
 `;
 
 const AgeDistributionChart = ({ data }) => {

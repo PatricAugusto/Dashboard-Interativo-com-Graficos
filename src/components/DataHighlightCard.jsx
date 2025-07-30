@@ -1,7 +1,60 @@
 // src/components/DataHighlightCard.jsx
 import React from 'react';
 import styled from 'styled-components';
-import { Card } from './Layout';
+
+const CardContainer = styled.div`
+  background-color: ${(props) => props.theme.colors.cardBackground};
+  padding: ${(props) => props.theme.spacing.large};
+  border-radius: ${(props) => props.theme.borderRadius};
+  box-shadow: ${(props) => props.theme.boxShadow};
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centraliza o conteúdo */
+  justify-content: center;
+  text-align: center;
+  transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  border: 1px solid ${(props) => props.theme.colors.border};
+
+  h3 {
+    color: ${(props) => props.theme.colors.primary};
+    margin-bottom: ${(props) => props.theme.spacing.small};
+    font-size: 1.2rem;
+    font-weight: 600;
+
+    @media (min-width: ${(props) => props.theme.breakpoints.tablet}) {
+      font-size: 1.5rem; /* Título maior em desktop */
+    }
+  }
+
+  .value {
+    font-size: 3rem; /* Tamanho maior para o valor */
+    font-weight: 700;
+    color: ${(props) => props.theme.colors.text};
+    margin-bottom: ${(props) => props.theme.spacing.xsmall};
+    line-height: 1.1; /* Ajusta o espaçamento da linha */
+    word-break: break-all; /* Quebra palavras longas se necessário */
+
+    @media (min-width: ${(props) => props.theme.breakpoints.tablet}) {
+      font-size: 4.5rem; /* Valor ainda maior em desktop */
+    }
+    @media (max-width: ${(props) => props.theme.breakpoints.mobile}) {
+      font-size: 2.5rem;
+    }
+  }
+
+  .label {
+    font-size: 0.9rem;
+    color: ${(props) => props.theme.colors.lightText};
+
+    @media (min-width: ${(props) => props.theme.breakpoints.tablet}) {
+      font-size: 1.1rem;
+    }
+  }
+
+  @media (max-width: ${(props) => props.theme.breakpoints.mobile}) {
+    padding: ${(props) => props.theme.spacing.medium};
+  }
+`;
 
 const Value = styled.p`
   font-size: 2.8rem;
@@ -30,14 +83,13 @@ const Label = styled.p`
 `;
 
 const DataHighlightCard = ({ title, value, label }) => {
-  const formattedValue = value ? parseInt(value).toLocaleString('pt-BR') : 'N/A';
-
+  
   return (
-    <Card>
-      <h2>{title}</h2>
-      <Value>{formattedValue}</Value>
-      {label && <Label>{label}</Label>}
-    </Card>
+    <CardContainer>
+      <h3>{title}</h3>
+      <span className="value">{typeof value === 'number' ? value.toLocaleString('pt-BR') : value}</span>
+      <span className="label">{label}</span>
+    </CardContainer>
   );
 };
 

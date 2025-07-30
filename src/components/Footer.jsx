@@ -3,22 +3,29 @@ import React from 'react';
 import styled from 'styled-components';
 
 const FooterContainer = styled.footer`
-  background-color: ${(props) => props.theme.colors.cardBackground}; /* Mesmo fundo dos cards para harmonia */
-  color: ${(props) => props.theme.colors.lightText}; /* Cor de texto suave */
-  padding: ${(props) => props.theme.spacing.medium} ${(props) => props.theme.spacing.large};
+  grid-column: 1 / -1; /* Garante que o footer ocupe toda a largura da grade */
+  background-color: ${(props) => props.theme.colors.cardBackground};
+  color: ${(props) => props.theme.colors.lightText};
+  padding: ${(props) => props.theme.spacing.large};
   text-align: center;
-  font-size: 0.85rem; /* Fonte um pouco menor para o rodapé */
-  border-top: 1px solid ${(props) => props.theme.colors.border}; /* Linha sutil no topo */
-  margin-top: ${(props) => props.theme.spacing.large}; /* Espaço acima do rodapé */
-  border-radius: ${(props) => props.theme.borderRadius}; /* Bordas arredondadas */
-  box-shadow: ${(props) => props.theme.boxShadow}; /* Sombra suave */
+  font-size: 0.9rem;
+  border-top: 1px solid ${(props) => props.theme.colors.border};
+  margin-top: ${(props) => props.theme.spacing.xlarge}; /* Espaçamento acima do footer */
+  border-radius: ${(props) => props.theme.borderRadius}; /* Mantém o estilo arredondado */
+  box-shadow: ${(props) => props.theme.boxShadow}; /* Mantém a sombra */
+
+  @media (max-width: ${(props) => props.theme.breakpoints.mobile}) {
+    padding: ${(props) => props.theme.spacing.medium};
+    margin-top: ${(props) => props.theme.spacing.large};
+  }
 
   p {
-    margin: 0; /* Remove margem padrão de parágrafo no rodapé */
+    margin: 0;
+    line-height: 1.5;
   }
 
   a {
-    color: ${(props) => props.theme.colors.primary}; /* Cor primária para links */
+    color: ${(props) => props.theme.colors.primary};
     text-decoration: none;
     &:hover {
       text-decoration: underline;
@@ -31,13 +38,11 @@ const Footer = () => {
   return (
     <FooterContainer>
       <p>
-        &copy; {currentYear} Dashboard IBGE. Todos os direitos reservados.
+        &copy; {currentYear} Dashboard de Dados Demográficos. Todos os direitos reservados.
       </p>
       <p>
-        Desenvolvido com React, Vite e Styled Components.
+        Desenvolvido com React. Dados fictícios baseados em informações do IBGE.
       </p>
-      {/* Você pode adicionar um link para o IBGE aqui, por exemplo */}
-      {/* <p>Dados fornecidos por <a href="https://www.ibge.gov.br/" target="_blank" rel="noopener noreferrer">IBGE</a></p> */}
     </FooterContainer>
   );
 };

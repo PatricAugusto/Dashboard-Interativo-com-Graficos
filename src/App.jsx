@@ -10,6 +10,7 @@ import RegionFilter from './components/RegionFilter';
 import NoDataMessage from './components/NoDataMessage';
 import ThemeToggle from './components/ThemeToggle';
 import Loader from './components/Loader';
+import Footer from './components/Footer'; 
 
 import { getTheme } from './styles/theme';
 import { ThemeProvider } from 'styled-components';
@@ -76,7 +77,6 @@ function App() {
             formattedData.sort((a, b) => a.year - b.year);
             setAllPopulationData(formattedData);
             if (formattedData.length > 0) {
-              // Define o ano inicial como o último ano disponível
               setSelectedYear(formattedData[formattedData.length - 1].year);
             }
           } else {
@@ -120,7 +120,6 @@ function App() {
     if (!selectedYear || allPopulationData.length === 0) {
       return [];
     }
-    // <--- Lógica de filtro corrigida: inclui todos os anos até o selectedYear
     return allPopulationData.filter(data => data.year <= selectedYear);
   }, [selectedYear, allPopulationData]);
 
@@ -181,7 +180,6 @@ function App() {
           {!loading && !error && filteredPopulationData.length > 0 ? (
             <PopulationChart data={filteredPopulationData} />
           ) : (
-            // Mensagem específica para o gráfico anual quando não há dados para o filtro
             !loading && !error && <NoDataMessage type="empty" message="Nenhum dado disponível para o gráfico até o ano selecionado." />
           )}
         </Card>
@@ -216,6 +214,7 @@ function App() {
           !loading && !error && <NoDataMessage type="empty" message="Nenhum dado de faixa etária disponível." />
         )}
       </Card>
+      <Footer /> 
     </Layout>
   </ThemeProvider>
 );
